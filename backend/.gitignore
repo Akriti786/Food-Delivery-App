@@ -1,0 +1,17 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node.js
+node_modules/
+
+# Logs
+*.log
+
+# Build output
+dist/
+build/
+
+# Uploads
+uploads/
