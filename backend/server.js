@@ -3,6 +3,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import connectDB from "./config/db.js";
+import authRoutes from "./routes/authRoutes.js";
+import testRoutes from "./routes/testRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 
@@ -12,6 +15,13 @@ app.use(cors());
 app.use(express.json());
 
 connectDB();
+
+
+app.use("/api/auth", authRoutes);
+
+//testing routes
+app.use("/api/test", testRoutes);
+app.use("/api/admin", adminRoutes);
 
 app.get("/", (req, res) => {
     res.json({
