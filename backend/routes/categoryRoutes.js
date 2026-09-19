@@ -6,7 +6,10 @@ import {
 } from "../middleware/authMiddleware.js";
 
 import {
-    createCategory
+    createCategory,
+    deletecategory,
+    getCategories,
+    updateCategory
 } from "../controllers/categoryController.js";
 
 const router = express.Router();
@@ -18,4 +21,23 @@ router.post(
     createCategory
 );
 
+router.get(
+    "/",
+    getCategories
+)
+
+router.put(
+    "/:id",
+    protect,
+    authorizeRoles("admin"),
+    updateCategory
+)
+
+
+router.delete(
+    "/:id",
+    protect,
+    authorizeRoles("admin"),
+    deletecategory
+)
 export default router;
