@@ -8,7 +8,9 @@ import {
 import {
     createRestaurant,
     getMyRestaurant,
-    updateMyRestaurant
+    updateMyRestaurant,
+    updateRestaurantStatus,
+    deleteMyRestaurant
 } from "../controllers/restaurantController.js";
 
 const router = express.Router();
@@ -38,6 +40,24 @@ router.put(
     protect,
     authorizeRoles("restaurant"),
     updateMyRestaurant
+);
+
+
+// OPEN / CLOSE RESTAURANT
+router.patch(
+    "/my/status",
+    protect,
+    authorizeRoles("restaurant"),
+    updateRestaurantStatus
+);
+
+
+// DELETE MY RESTAURANT
+router.delete(
+    "/my",
+    protect,
+    authorizeRoles("restaurant"),
+    deleteMyRestaurant
 );
 
 

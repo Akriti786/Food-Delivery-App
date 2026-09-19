@@ -158,3 +158,80 @@ export const updateMyRestaurant = async (req, res) => {
         });
     }
 };
+
+
+
+
+// UPDATE RESTAURANT OPEN/CLOSE STATUS
+export const updateRestaurantStatus = async (req, res) => {
+    try {
+        const { isOpen } = req.body;
+
+        // Check whether isOpen was provided
+        if (isOpen === undefined) {
+            return res.status(400).json({
+                message: "isOpen is required"
+            });
+        }
+
+        const restaurant = await Restaurant.findOne({
+            owner: req.user._id
+        });
+
+        if (!restaurant) {
+            return res.status(404).json({
+                message: "Restaurant not found"
+            });
+        }
+
+        restaurant.isOpen = isOpen;
+
+        await restaurant.save();
+
+        res.status(200).json({
+            message: restaurant.isOpen
+                ? "Restaurant is now open"
+                : "Restaurant is now closed",
+            restaurant
+        });
+
+    } catch (error) {
+        console.error("Update restaurant status error:", error);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
+
+
+
+// DELETE MY RESTAURANT
+export const deleteMyRestaurant = async (req, res) => {
+    try {
+        const restaurant = await Restaurant.findOne({
+            owner: req.user._id
+        });
+
+        if (!restaurant) {
+            return res.status(404).json({
+                message: "Restaurant not found"
+            });
+        }
+
+        await Restaurant.findByIdAndDelete(
+            restaurant._id
+        );
+
+        res.status(200).json({
+            message: "Restaurant deleted successfully"
+        });
+
+    } catch (error) {
+        console.error("Delete restaurant error:", error);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
