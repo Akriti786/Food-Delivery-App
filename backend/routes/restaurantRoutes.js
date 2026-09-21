@@ -10,11 +10,18 @@ import {
     getMyRestaurant,
     updateMyRestaurant,
     updateRestaurantStatus,
-    deleteMyRestaurant
+    deleteMyRestaurant,
+    getAllRestaurants
 } from "../controllers/restaurantController.js";
 
 const router = express.Router();
 
+
+//GET ALL RESTAURANT
+router.get(
+    "/",
+    getAllRestaurants
+)
 
 // CREATE RESTAURANT
 router.post(

@@ -235,3 +235,31 @@ export const deleteMyRestaurant = async (req, res) => {
         });
     }
 };
+
+
+
+
+// GET ALL RESTAURANTS
+export const getAllRestaurants = async (req, res) => {
+    try {
+        const restaurants = await Restaurant.find({
+            isApproved: true,
+            isOpen: true
+        }).populate(
+            "owner",
+            "name email"
+        );
+
+        res.status(200).json({
+            message: "Restaurants fetched successfully",
+            restaurants
+        });
+
+    } catch (error) {
+        console.error("Get restaurants error:", error);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};

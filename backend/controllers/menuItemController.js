@@ -239,3 +239,51 @@ export const deleteMenuItem = async (req, res) => {
         });
     }
 };
+
+
+
+//GET RESTAURANT MEUN ITEMS
+// GET RESTAURANT MENU
+export const getRestaurantMenu = async (req, res) => {
+    try {
+        const { restaurantId } = req.params;
+
+        // Check restaurant exists
+        const restaurant = await Restaurant.findOne({
+            _id: restaurantId,
+            isApproved: true,
+            isOpen: true
+        });
+
+        if (!restaurant) {
+            return res.status(404).json({
+                message: "Restaurant not found or currently closed"
+            });
+        }
+
+        // Get available menu items
+        const menuItems = await MenuItem.find({
+            restaurant: restaurantId,
+            isAvailable: true
+        }).populate(
+            "category",
+            "name"
+        );
+
+        res.status(200).json({
+            message: "Restaurant menu fetched successfully",
+            restaurant: {
+                id: restaurant._id,
+                name: restaurant.name
+            },
+            menuItems
+        });
+
+    } catch (error) {
+        console.error("Get restaurant menu error:", error);
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};

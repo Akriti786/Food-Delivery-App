@@ -9,6 +9,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import menuItemRoutes from "./routes/menuItemRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
 
 dotenv.config();
 
@@ -21,13 +22,12 @@ connectDB();
 
 
 app.use("/api/auth", authRoutes);
-
-//testing routes
 app.use("/api/test", testRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/menu-items", menuItemRoutes);
+app.use("/api/cart", cartRoutes);
 
 app.get("/", (req, res) => {
     res.json({
