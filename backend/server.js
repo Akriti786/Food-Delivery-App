@@ -8,6 +8,7 @@ import testRoutes from "./routes/testRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import menuItemRoutes from "./routes/menuItemRoutes.js";
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.use("/api/test", testRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/restaurants", restaurantRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/menu-items", menuItemRoutes);
 
 app.get("/", (req, res) => {
     res.json({
