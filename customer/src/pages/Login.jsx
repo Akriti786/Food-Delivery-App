@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { registerUser } from "../api/authApi.js";
+import { loginUser } from "../api/authApi.js";
 
-const Register = () => {
+const Login = () => {
 
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState({
-        name: "",
         email: "",
-        password: "",
-        phone: ""
+        password: ""
     });
 
     const [message, setMessage] = useState("");
@@ -32,26 +30,34 @@ const Register = () => {
 
         try {
 
-            const data = await registerUser(formData);
+            const data = await loginUser(formData);
 
-            console.log("Register response:", data);
+            console.log("Login response:", data);
 
-            setMessage(data.message);
+            // Save JWT token
+            localStorage.setItem("token", data.token);
+
+            // Save user information
+            localStorage.setItem("user",
+                JSON.stringify(data.user)
+            );
+
+            setMessage("Login successful");
 
             setTimeout(() => {
-                navigate("/login");
-            }, 1000);
+                navigate("/");
+            }, 500);
 
         } catch (error) {
 
             console.error(
-                "Register error:",
+                "Login error:",
                 error
             );
 
             setMessage(
                 error.response?.data?.message ||
-                "Registration failed"
+                "Login failed"
             );
         }
     };
@@ -59,21 +65,13 @@ const Register = () => {
     return (
         <div className="auth-container">
 
-            <h2>Create Account</h2>
+            <h2>Login</h2>
 
             {message && (
                 <p>{message}</p>
             )}
 
             <form onSubmit={handleSubmit}>
-
-                <input
-                    type="text"
-                    name="name"
-                    placeholder="Name"
-                    value={formData.name}
-                    onChange={handleChange}
-                />
 
                 <input
                     type="email"
@@ -91,16 +89,8 @@ const Register = () => {
                     onChange={handleChange}
                 />
 
-                <input
-                    type="text"
-                    name="phone"
-                    placeholder="Phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                />
-
                 <button type="submit">
-                    Register
+                    Login
                 </button>
 
             </form>
@@ -109,4 +99,4 @@ const Register = () => {
     );
 };
 
-export default Register;
+export default Login;
