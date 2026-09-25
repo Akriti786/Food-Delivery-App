@@ -1,19 +1,22 @@
 import express from "express";
 
 import {
+    createDeliveryPartner,
+    getReadyOrders,
+    getMyOrders,
+    assignOrder,
+    updateDeliveryOrderStatus
+} from "../controllers/deliveryController.js";
+
+import {
     protect,
     authorizeRoles
 } from "../middleware/authMiddleware.js";
 
-import {
-    createDeliveryPartner,
-    getReadyOrders,
-    assignOrder,
-    updateDeliveryOrderStatus
-} from "../controllers/deliveryController.js";
 const router = express.Router();
 
-// ADMIN - CREATE DELIVERY PARTNER
+
+// Admin creates delivery partner
 router.post(
     "/",
     protect,
@@ -21,7 +24,8 @@ router.post(
     createDeliveryPartner
 );
 
-// DELIVERY - VIEW READY ORDERS
+
+// Delivery partner sees available READY orders
 router.get(
     "/ready-orders",
     protect,
@@ -29,7 +33,17 @@ router.get(
     getReadyOrders
 );
 
-// DELIVERY - ASSIGN ORDER TO MYSELF
+
+// Delivery partner sees orders assigned to them
+router.get(
+    "/my-orders",
+    protect,
+    authorizeRoles("delivery"),
+    getMyOrders
+);
+
+
+// Delivery partner assigns an order
 router.patch(
     "/assign/:orderId",
     protect,
@@ -37,11 +51,14 @@ router.patch(
     assignOrder
 );
 
+
+// Delivery partner updates delivery status
 router.patch(
     "/order/:orderId/status",
     protect,
     authorizeRoles("delivery"),
     updateDeliveryOrderStatus
 );
+
 
 export default router;

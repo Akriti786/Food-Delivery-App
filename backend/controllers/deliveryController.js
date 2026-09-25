@@ -293,3 +293,57 @@ export const updateDeliveryOrderStatus = async (req, res) => {
         });
     }
 };
+
+
+
+
+export const getMyOrders = async (req, res) => {
+
+    try {
+
+        // Find delivery partner of logged-in user
+        const deliveryPartner =
+            await DeliveryPartner.findOne({
+                user: req.user._id
+            });
+
+        if (!deliveryPartner) {
+
+            return res.status(404).json({
+                message: "Delivery partner not found"
+            });
+        }
+
+        // Find orders assigned to this delivery partner
+        const orders = await Order.find({
+            deliveryPartner: deliveryPartner._id
+        })
+            .populate(
+                "customer",
+                "name phone address"
+            )
+            .populate(
+                "restaurant",
+                "name address phone"
+            )
+            .sort({
+                createdAt: -1
+            });
+
+        res.status(200).json({
+            message: "My orders fetched successfully",
+            orders
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Get my orders error:",
+            error
+        );
+
+        res.status(500).json({
+            message: "Server error"
+        });
+    }
+};
