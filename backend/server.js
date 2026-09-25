@@ -12,6 +12,8 @@ import menuItemRoutes from "./routes/menuItemRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
 import deliveryRoutes from "./routes/deliveryRoutes.js";
+import adminRestaurantRoutes from "./routes/adminRestaurantRoutes.js";
+
 
 dotenv.config();
 
@@ -32,6 +34,8 @@ app.use("/api/menu-items", menuItemRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/delivery", deliveryRoutes);
+app.use("/api/admin/restaurants", adminRestaurantRoutes);
+
 
 app.get("/", (req, res) => {
     res.json({
