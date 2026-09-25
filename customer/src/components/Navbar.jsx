@@ -53,6 +53,14 @@ const Navbar = () => {
 
                     {token && (
                         <>
+                            <Link to="/cart">
+                                🛒 Cart
+                            </Link>
+
+                            <Link to="/orders">
+                                📦 Orders
+                            </Link>
+
                             <span>
                                 Hi, {user?.name}
                             </span>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { addToCart } from "../api/cartApi.js";
 
 import {
     useParams
@@ -17,6 +18,8 @@ const RestaurantMenu = () => {
     const [loading, setLoading] = useState(true);
 
     const [error, setError] = useState("");
+
+    const [cartMessage, setCartMessage] = useState("");
 
     useEffect(() => {
 
@@ -69,12 +72,52 @@ const RestaurantMenu = () => {
         return <h2>{error}</h2>;
     }
 
+
+    const handleAddToCart = async (menuItemId) => {
+
+        try {
+
+            const data = await addToCart(
+                menuItemId,
+                1
+            );
+
+            console.log(
+                "Cart response:",
+                data
+            );
+
+            setCartMessage(
+                "Item added to cart 🛒"
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Add to cart error:",
+                error
+            );
+
+            setCartMessage(
+                error.response?.data?.message ||
+                "Failed to add item"
+            );
+        }
+    };
+
+
     return (
         <div className="menu-page">
 
             <h1>
                 Restaurant Menu
             </h1>
+
+            {cartMessage && (
+                <p>
+                    {cartMessage}
+                </p>
+            )}
 
             <div className="menu-list">
 
@@ -111,7 +154,13 @@ const RestaurantMenu = () => {
                             }
                         </p>
 
-                        <button>
+                        <button
+                            onClick={() =>
+                                handleAddToCart(
+                                    item._id
+                                )
+                            }
+                        >
                             Add to Cart
                         </button>
 

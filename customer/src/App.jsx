@@ -10,6 +10,9 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Restaurants from "./pages/Restaurants.jsx";
 import RestaurantMenu from "./pages/RestaurantMenu.jsx";
+import Cart from "./pages/Cart.jsx";
+import Checkout from "./pages/Checkout.jsx";
+import Orders from "./pages/Orders.jsx";
 
 const router = createBrowserRouter([
   {
@@ -42,7 +45,20 @@ const router = createBrowserRouter([
         element: <RestaurantMenu />
       },
 
-      
+      {
+        path: "cart",
+        element: <Cart />
+      },
+
+      {
+        path: "checkout",
+        element: <Checkout />
+      },
+
+      {
+        path: "orders",
+        element: <Orders />
+      }
     ]
   }
 ]);
