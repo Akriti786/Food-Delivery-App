@@ -1,95 +1,46 @@
-import { useEffect, useState } from "react";
-import { addToCart } from "../api/cartApi.js";
+import {
+    useEffect,
+    useState
+} from "react";
 
 import {
-    useParams
+    useParams,
+    useNavigate
 } from "react-router-dom";
 
 import {
     getRestaurantMenu
 } from "../api/menuApi.js";
+import {
+    addToCart
+} from "../api/cartApi.js";
 
 const RestaurantMenu = () => {
 
-    const { restaurantId } = useParams();
+    const {
+        restaurantId
+    } = useParams();
 
-    const [menuItems, setMenuItems] = useState([]);
+    const navigate = useNavigate();
 
-    const [loading, setLoading] = useState(true);
 
-    const [error, setError] = useState("");
+    const [menuItems, setMenuItems] =
+        useState([]);
 
-    const [cartMessage, setCartMessage] = useState("");
+    const [loading, setLoading] =
+        useState(true);
 
-    useEffect(() => {
-
-        const fetchMenu = async () => {
-
-            try {
-
-                const data =
-                    await getRestaurantMenu(
-                        restaurantId
-                    );
-
-                console.log(
-                    "Menu response:",
-                    data
-                );
-
-                setMenuItems(
-                    data.menuItems
-                );
-
-            } catch (error) {
-
-                console.error(
-                    "Menu error:",
-                    error
-                );
-
-                setError(
-                    error.response?.data?.message ||
-                    "Failed to load menu"
-                );
-
-            } finally {
-
-                setLoading(false);
-
-            }
-        };
-
-        fetchMenu();
-
-    }, [restaurantId]);
-
-    if (loading) {
-        return <h2>Loading menu...</h2>;
-    }
-
-    if (error) {
-        return <h2>{error}</h2>;
-    }
+    const [error, setError] =
+        useState("");
 
 
     const handleAddToCart = async (menuItemId) => {
-
         try {
+            const data = await addToCart(menuItemId, 1);
 
-            const data = await addToCart(
-                menuItemId,
-                1
-            );
+            console.log("Cart response:", data);
 
-            console.log(
-                "Cart response:",
-                data
-            );
-
-            setCartMessage(
-                "Item added to cart 🛒"
-            );
+            alert("Item added to cart successfully");
 
         } catch (error) {
 
@@ -98,77 +49,180 @@ const RestaurantMenu = () => {
                 error
             );
 
-            setCartMessage(
+            alert(
                 error.response?.data?.message ||
-                "Failed to add item"
+                "Failed to add item to cart"
             );
         }
     };
 
 
+    const fetchMenu = async () => {
+
+        try {
+
+            const data =
+                await getRestaurantMenu(
+                    restaurantId
+                );
+
+            console.log(
+                "Restaurant menu:",
+                data
+            );
+
+            setMenuItems(
+                data.menuItems || []
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Menu error:",
+                error
+            );
+
+            setError(
+                error.response?.data?.message ||
+                "Failed to load menu"
+            );
+
+        } finally {
+
+            setLoading(false);
+        }
+    };
+
+
+    useEffect(() => {
+
+        fetchMenu();
+
+    }, [restaurantId]);
+
+
+    if (loading) {
+
+        return (
+            <div className="page-container">
+
+                <h2>
+                    Loading menu...
+                </h2>
+
+            </div>
+        );
+    }
+
+
     return (
-        <div className="menu-page">
+        <div className="page-container">
 
-            <h1>
-                Restaurant Menu
-            </h1>
+            <button
+                onClick={() =>
+                    navigate("/restaurants")
+                }
+            >
+                ← Back to Restaurants
+            </button>
 
-            {cartMessage && (
+
+            <div className="page-header">
+
+                <h1>
+                    Restaurant Menu 🍽️
+                </h1>
+
                 <p>
-                    {cartMessage}
+                    Choose your food
+                </p>
+
+            </div>
+
+
+            {error && (
+                <p className="error-message">
+                    {error}
                 </p>
             )}
 
-            <div className="menu-list">
 
-                {menuItems.map((item) => (
+            {menuItems.length === 0 ? (
 
-                    <div
-                        className="menu-card"
-                        key={item._id}
-                    >
+                <p>
+                    No menu items available.
+                </p>
 
-                        <h2>
-                            {item.name}
-                        </h2>
+            ) : (
 
-                        <p>
-                            {item.description}
-                        </p>
+                <div className="menu-grid">
 
-                        <p>
-                            ₹{item.price}
-                        </p>
+                    {menuItems.map(
+                        (item) => (
 
-                        <p>
-                            {item.isVeg
-                                ? "🟢 Veg"
-                                : "🔴 Non-Veg"
-                            }
-                        </p>
+                            <div
+                                className="customer-menu-card"
+                                key={item._id}
+                            >
 
-                        <p>
-                            {item.isAvailable
-                                ? "Available"
-                                : "Currently unavailable"
-                            }
-                        </p>
+                                <h2>
+                                    {item.name}
+                                </h2>
 
-                        <button
-                            onClick={() =>
-                                handleAddToCart(
-                                    item._id
-                                )
-                            }
-                        >
-                            Add to Cart
-                        </button>
+                                <p>
+                                    {
+                                        item.description
+                                    }
+                                </p>
 
-                    </div>
+                                <p>
+                                    Category:{" "}
 
-                ))}
+                                    {
+                                        item.category?.name ||
+                                        "Food"
+                                    }
+                                </p>
 
-            </div>
+                                <h3>
+                                    ₹{item.price}
+                                </h3>
+
+                                <p>
+                                    {
+                                        item.isVeg
+                                            ? "🥗 Vegetarian"
+                                            : "🍗 Non-Vegetarian"
+                                    }
+                                </p>
+
+                                <p>
+                                    {
+                                        item.isAvailable
+                                            ? "✅ Available"
+                                            : "❌ Currently unavailable"
+                                    }
+                                </p>
+
+
+                                {item.isAvailable && (
+
+                                    <button
+                                        onClick={() =>
+                                            handleAddToCart(item._id)}
+                                    >
+                                        🛒 Add to Cart
+                                    </button>
+                                )}
+
+                            </div>
+
+                        )
+                    )}
+
+                </div>
+
+            )}
 
         </div>
     );

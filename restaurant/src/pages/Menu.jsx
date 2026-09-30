@@ -1,4 +1,7 @@
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState
+} from "react";
 
 import {
     getMyMenu,
@@ -7,35 +10,55 @@ import {
     deleteMenuItem
 } from "../api/menuApi.js";
 
+import {
+    getCategories
+} from "../api/categoryApi.js";
+
+
 const Menu = () => {
 
-    const [menuItems, setMenuItems] = useState([]);
+    const [menuItems, setMenuItems] =
+        useState([]);
 
-    const [loading, setLoading] = useState(true);
+    const [categories, setCategories] =
+        useState([]);
 
-    const [message, setMessage] = useState("");
+    const [loading, setLoading] =
+        useState(true);
 
-    const [formData, setFormData] = useState({
-        name: "",
-        description: "",
-        price: "",
-        category: "",
-        isVeg: false,
-        isAvailable: true
-    });
+    const [error, setError] =
+        useState("");
 
     const [editingId, setEditingId] =
         useState(null);
 
 
-    // Get restaurant menu
+    const [formData, setFormData] =
+        useState({
+            name: "",
+            description: "",
+            price: "",
+            category: "",
+            isVeg: true,
+            isAvailable: true
+        });
+
+
+    // =========================
+    // FETCH MENU
+    // =========================
+
     const fetchMenu = async () => {
 
         try {
 
-            const data = await getMyMenu();
+            const data =
+                await getMyMenu();
 
-            console.log( "My menu:", data );
+            console.log(
+                "My menu:",
+                data
+            );
 
             setMenuItems(
                 data.menuItems || []
@@ -48,28 +71,79 @@ const Menu = () => {
                 error
             );
 
-            setMessage(
+            setError(
                 error.response?.data?.message ||
                 "Failed to load menu"
             );
-
-        } finally {
-
-            setLoading(false);
-
         }
     };
 
 
+    // =========================
+    // FETCH CATEGORIES
+    // =========================
+
+    const fetchCategories = async () => {
+
+        try {
+
+            const data =
+                await getCategories();
+
+            console.log(
+                "Categories:",
+                data
+            );
+
+            setCategories(
+                data.categories || []
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Categories error:",
+                error
+            );
+
+            setError(
+                error.response?.data?.message ||
+                "Failed to load categories"
+            );
+        }
+    };
+
+
+    // =========================
+    // INITIAL LOAD
+    // =========================
+
     useEffect(() => {
 
-        fetchMenu();
+        const loadData = async () => {
+
+            setLoading(true);
+
+            await Promise.all([
+                fetchMenu(),
+                fetchCategories()
+            ]);
+
+            setLoading(false);
+        };
+
+        loadData();
 
     }, []);
 
 
-    // Input change
-    const handleChange = (event) => {
+    // =========================
+    // HANDLE INPUT
+    // =========================
+
+    const handleChange = (
+        event
+    ) => {
 
         const {
             name,
@@ -88,64 +162,112 @@ const Menu = () => {
     };
 
 
-    // Add / Update
-    const handleSubmit = async (event) => {
+    // =========================
+    // ADD / UPDATE
+    // =========================
+
+    const handleSubmit = async (
+        event
+    ) => {
 
         event.preventDefault();
 
+        setError("");
+
+
+        if (
+            !formData.name.trim()
+        ) {
+
+            setError(
+                "Food name is required"
+            );
+
+            return;
+        }
+
+
+        if (
+            !formData.price ||
+            Number(formData.price) <= 0
+        ) {
+
+            setError(
+                "Enter a valid price"
+            );
+
+            return;
+        }
+
+
+        if (!formData.category) {
+
+            setError(
+                "Please select a category"
+            );
+
+            return;
+        }
+
+
         try {
+
+            const menuData = {
+
+                name: formData.name,
+
+                description:
+                    formData.description,
+
+                price:
+                    Number(formData.price),
+
+                category:
+                    formData.category,
+
+                isVeg:
+                    formData.isVeg,
+
+                isAvailable:
+                    formData.isAvailable
+            };
+
 
             if (editingId) {
 
                 await updateMenuItem(
                     editingId,
-                    {
-                        ...formData,
-                        price: Number(
-                            formData.price
-                        )
-                    }
+                    menuData
                 );
 
-                setMessage(
+                alert(
                     "Menu item updated successfully"
                 );
 
             } else {
 
-                await createMenuItem({
-                    ...formData,
-                    price: Number(
-                        formData.price
-                    )
-                });
+                await createMenuItem(
+                    menuData
+                );
 
-                setMessage(
+                alert(
                     "Menu item added successfully"
                 );
             }
 
-            setFormData({
-                name: "",
-                description: "",
-                price: "",
-                category: "",
-                isVeg: false,
-                isAvailable: true
-            });
 
-            setEditingId(null);
+            resetForm();
 
             fetchMenu();
 
         } catch (error) {
 
             console.error(
-                "Save menu error:",
+                "Menu save error:",
                 error
             );
 
-            setMessage(
+            setError(
                 error.response?.data?.message ||
                 "Failed to save menu item"
             );
@@ -153,34 +275,49 @@ const Menu = () => {
     };
 
 
-    // Edit
-    const handleEdit = (item) => {
+    // =========================
+    // EDIT
+    // =========================
 
-        setEditingId(item._id);
+    const handleEdit = (
+        item
+    ) => {
+
+        setEditingId(
+            item._id
+        );
 
         setFormData({
-            name: item.name || "",
+
+            name:
+                item.name || "",
+
             description:
                 item.description || "",
-            price: item.price || "",
+
+            price:
+                item.price || "",
+
             category:
                 item.category?._id ||
                 item.category ||
                 "",
+
             isVeg:
-                item.isVeg || false,
+                item.isVeg ?? true,
+
             isAvailable:
-                item.isAvailable !== false
+                item.isAvailable ?? true
         });
 
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
+        setError("");
     };
 
 
-    // Delete
+    // =========================
+    // DELETE
+    // =========================
+
     const handleDelete = async (
         menuItemId
     ) => {
@@ -194,13 +331,14 @@ const Menu = () => {
             return;
         }
 
+
         try {
 
             await deleteMenuItem(
                 menuItemId
             );
 
-            setMessage(
+            alert(
                 "Menu item deleted successfully"
             );
 
@@ -213,11 +351,32 @@ const Menu = () => {
                 error
             );
 
-            setMessage(
+            setError(
                 error.response?.data?.message ||
                 "Failed to delete menu item"
             );
         }
+    };
+
+
+    // =========================
+    // RESET FORM
+    // =========================
+
+    const resetForm = () => {
+
+        setFormData({
+
+            name: "",
+            description: "",
+            price: "",
+            category: "",
+            isVeg: true,
+            isAvailable: true
+
+        });
+
+        setEditingId(null);
     };
 
 
@@ -234,25 +393,39 @@ const Menu = () => {
     return (
         <div className="menu-page">
 
-            <h1>
-                Menu Management 🍽️
-            </h1>
+            {/* ========================= */}
+            {/* HEADER */}
+            {/* ========================= */}
 
-            <p>
-                Add and manage your restaurant menu.
-            </p>
+            <div className="dashboard-header">
 
+                <h1>
+                    Menu Management 🍽️
+                </h1>
 
-            {message && (
                 <p>
-                    {message}
+                    Add and manage your restaurant menu
+                </p>
+
+            </div>
+
+
+            {/* ========================= */}
+            {/* ERROR */}
+            {/* ========================= */}
+
+            {error && (
+                <p className="error-message">
+                    {error}
                 </p>
             )}
 
 
+            {/* ========================= */}
             {/* FORM */}
+            {/* ========================= */}
 
-            <div className="menu-form">
+            <div className="menu-form-card">
 
                 <h2>
                     {editingId
@@ -260,18 +433,25 @@ const Menu = () => {
                         : "Add Menu Item"}
                 </h2>
 
+
                 <form
                     onSubmit={handleSubmit}
                 >
 
+                    {/* FOOD NAME */}
+
                     <input
                         type="text"
                         name="name"
-                        placeholder="Item name"
+                        placeholder="Food name"
                         value={formData.name}
-                        onChange={handleChange}
-                        required
+                        onChange={
+                            handleChange
+                        }
                     />
+
+
+                    {/* DESCRIPTION */}
 
                     <textarea
                         name="description"
@@ -279,34 +459,78 @@ const Menu = () => {
                         value={
                             formData.description
                         }
-                        onChange={handleChange}
+                        onChange={
+                            handleChange
+                        }
                     />
+
+
+                    {/* PRICE */}
 
                     <input
                         type="number"
                         name="price"
                         placeholder="Price"
-                        value={formData.price}
-                        onChange={handleChange}
-                        required
+                        value={
+                            formData.price
+                        }
+                        onChange={
+                            handleChange
+                        }
                     />
 
-                    <input
-                        type="text"
+
+                    {/* CATEGORY */}
+
+                    <select
                         name="category"
-                        placeholder="Category ID"
-                        value={formData.category}
-                        onChange={handleChange}
-                        required
-                    />
+                        value={
+                            formData.category
+                        }
+                        onChange={
+                            handleChange
+                        }
+                    >
 
-                    <label>
+                        <option value="">
+                            Select Category
+                        </option>
+
+                        {categories.map(
+                            (category) => (
+
+                                <option
+                                    key={
+                                        category._id
+                                    }
+                                    value={
+                                        category._id
+                                    }
+                                >
+                                    {
+                                        category.name
+                                    }
+                                </option>
+
+                            )
+                        )}
+
+                    </select>
+
+
+                    {/* VEG */}
+
+                    <label className="checkbox-label">
 
                         <input
                             type="checkbox"
                             name="isVeg"
-                            checked={formData.isVeg}
-                            onChange={handleChange}
+                            checked={
+                                formData.isVeg
+                            }
+                            onChange={
+                                handleChange
+                            }
                         />
 
                         Vegetarian
@@ -314,7 +538,9 @@ const Menu = () => {
                     </label>
 
 
-                    <label>
+                    {/* AVAILABLE */}
+
+                    <label className="checkbox-label">
 
                         <input
                             type="checkbox"
@@ -322,7 +548,9 @@ const Menu = () => {
                             checked={
                                 formData.isAvailable
                             }
-                            onChange={handleChange}
+                            onChange={
+                                handleChange
+                            }
                         />
 
                         Available
@@ -330,23 +558,45 @@ const Menu = () => {
                     </label>
 
 
-                    <button type="submit">
+                    {/* BUTTONS */}
 
-                        {editingId
-                            ? "Update Item"
-                            : "Add Item"}
+                    <div className="menu-form-actions">
 
-                    </button>
+                        <button
+                            type="submit"
+                        >
+                            {editingId
+                                ? "Update Item"
+                                : "Add Item"}
+                        </button>
+
+
+                        {editingId && (
+
+                            <button
+                                type="button"
+                                onClick={
+                                    resetForm
+                                }
+                            >
+                                Cancel
+                            </button>
+
+                        )}
+
+                    </div>
 
                 </form>
 
             </div>
 
 
+            {/* ========================= */}
             {/* MENU LIST */}
+            {/* ========================= */}
 
-            <h2>
-                My Menu
+            <h2 className="menu-list-title">
+                Your Menu
             </h2>
 
 
@@ -358,74 +608,95 @@ const Menu = () => {
 
             ) : (
 
-                <div>
+                <div className="menu-list">
 
                     {menuItems.map(
                         (item) => (
 
                             <div
                                 className="menu-card"
-                                key={item._id}
+                                key={
+                                    item._id
+                                }
                             >
 
-                                <h3>
-                                    {item.name}
-                                </h3>
+                                <div>
 
-                                <p>
-                                    {
-                                        item.description
-                                    }
-                                </p>
+                                    <h3>
+                                        {
+                                            item.name
+                                        }
+                                    </h3>
 
-                                <p>
-                                    Price: ₹
-                                    {item.price}
-                                </p>
+                                    <p>
+                                        {
+                                            item.description
+                                        }
+                                    </p>
 
-                                <p>
-                                    Category:{" "}
-                                    {
-                                        item.category?.name ||
-                                        item.category
-                                    }
-                                </p>
+                                    <p>
+                                        Category:{" "}
 
-                                <p>
-                                    Type:{" "}
-                                    {item.isVeg
-                                        ? "Veg"
-                                        : "Non-Veg"}
-                                </p>
+                                        {
+                                            item.category?.name ||
+                                            "Unknown"
+                                        }
+                                    </p>
 
-                                <p>
-                                    Status:{" "}
-                                    {item.isAvailable
-                                        ? "Available"
-                                        : "Unavailable"}
-                                </p>
+                                    <p>
+                                        Price: ₹
+                                        {
+                                            item.price
+                                        }
+                                    </p>
+
+                                    <p>
+                                        Type:{" "}
+
+                                        {
+                                            item.isVeg
+                                                ? "Vegetarian 🥗"
+                                                : "Non-Vegetarian 🍗"
+                                        }
+                                    </p>
+
+                                    <p>
+                                        Status:{" "}
+
+                                        {
+                                            item.isAvailable
+                                                ? "Available"
+                                                : "Unavailable"
+                                        }
+                                    </p>
+
+                                </div>
 
 
-                                <button
-                                    onClick={() =>
-                                        handleEdit(
-                                            item
-                                        )
-                                    }
-                                >
-                                    Edit
-                                </button>
+                                <div className="menu-actions">
+
+                                    <button
+                                        onClick={() =>
+                                            handleEdit(
+                                                item
+                                            )
+                                        }
+                                    >
+                                        ✏️ Edit
+                                    </button>
 
 
-                                <button
-                                    onClick={() =>
-                                        handleDelete(
-                                            item._id
-                                        )
-                                    }
-                                >
-                                    Delete
-                                </button>
+                                    <button
+                                        onClick={() =>
+                                            handleDelete(
+                                                item._id
+                                            )
+                                        }
+                                    >
+                                        🗑️ Delete
+                                    </button>
+
+                                </div>
 
                             </div>
 
@@ -433,6 +704,7 @@ const Menu = () => {
                     )}
 
                 </div>
+
             )}
 
         </div>

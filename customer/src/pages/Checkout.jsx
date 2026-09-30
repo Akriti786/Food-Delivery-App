@@ -1,105 +1,110 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+    useState
+} from "react";
 
-import { createOrder } from "../api/orderApi.js";
+import {
+    useNavigate
+} from "react-router-dom";
+import {
+    createOrder
+} from "../api/orderApi.js";
 
 const Checkout = () => {
 
     const navigate = useNavigate();
 
-    const [address, setAddress] = useState("");
+    const [deliveryAddress, setDeliveryAddress] = useState("");
     const [paymentMethod, setPaymentMethod] = useState("COD");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
 
     const handleSubmit = async (event) => {
+
         event.preventDefault();
-
-        if (!address.trim()) {
-
-            setError(
-                "Please enter delivery address"
-            );
-
-            return;
-        }
 
         try {
 
-            setLoading(true);
+            const orderData = {
+                deliveryAddress,
+                paymentMethod
+            };
 
-            setError("");
+            console.log(
+                "Creating order:",
+                orderData
+            );
 
-            const data = await createOrder({
-                deliveryAddress: address,
-                paymentMethod: paymentMethod
-            });
+            const data =
+                await createOrder(orderData);
 
-            console.log("Order response:", data);
+            console.log(
+                "Order created:",
+                data
+            );
 
             alert(
-                "Order placed successfully 🎉"
+                "Order placed successfully!"
             );
 
             navigate("/orders");
 
         } catch (error) {
 
-            console.error("Create order error:", error);
+            console.error(
+                "Create order error:",
+                error
+            );
 
-            setError(
+            alert(
                 error.response?.data?.message ||
                 "Failed to place order"
             );
-
-        } finally {
-
-            setLoading(false);
-
         }
     };
 
+
+
     return (
-        <div className="checkout-page">
+        <div className="page-container">
 
-            <h1>
-                Checkout 🛍️
-            </h1>
+            <div className="page-header">
 
-            {error && (
+                <h1>
+                    Checkout 🧾
+                </h1>
+
                 <p>
-                    {error}
+                    Enter your delivery details
                 </p>
-            )}
 
-            <form onSubmit={handleSubmit}>
+            </div>
 
-                <div>
+            <div className="checkout-container">
 
-                    <label>
+                <form
+                    className="checkout-form"
+                    onSubmit={handleSubmit}
+                >
+
+                    <h2>
                         Delivery Address
-                    </label>
+                    </h2>
 
                     <textarea
-                        value={address}
+                        value={deliveryAddress}
                         onChange={(event) =>
-                            setAddress(
+                            setDeliveryAddress(
                                 event.target.value
                             )
                         }
                         placeholder="Enter your delivery address"
                         rows="4"
+                        required
                     />
 
-                </div>
-
-                <div>
-
-                    <h3>
+                    <h2>
                         Payment Method
-                    </h3>
+                    </h2>
 
-                    <label>
+                    <label className="payment-option">
 
                         <input
                             type="radio"
@@ -117,16 +122,13 @@ const Checkout = () => {
                         Cash on Delivery
                     </label>
 
-                    <br />
-
-                    <label>
+                    <label className="payment-option">
 
                         <input
                             type="radio"
                             value="RAZORPAY"
                             checked={
-                                paymentMethod ===
-                                "RAZORPAY"
+                                paymentMethod === "RAZORPAY"
                             }
                             onChange={(event) =>
                                 setPaymentMethod(
@@ -138,19 +140,30 @@ const Checkout = () => {
                         Razorpay
                     </label>
 
-                </div>
+                    <div className="checkout-actions">
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                >
-                    {loading
-                        ? "Placing Order..."
-                        : "Place Order"
-                    }
-                </button>
+                        <button
+                            type="button"
+                            className="back-button"
+                            onClick={() =>
+                                navigate("/cart")
+                            }
+                        >
+                            ← Back to Cart
+                        </button>
 
-            </form>
+                        <button
+                            type="submit"
+                            className="checkout-button"
+                        >
+                            Place Order
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
 
         </div>
     );

@@ -1,151 +1,12 @@
-// import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState
+} from "react";
 
-// import {
-//     getCart
-// } from "../api/cartApi.js";
-
-// const Cart = () => {
-
-//     const [cart, setCart] = useState(null);
-
-//     const [loading, setLoading] = useState(true);
-
-//     const [error, setError] = useState("");
-
-//     useEffect(() => {
-
-//         const fetchCart = async () => {
-
-//             try {
-
-//                 const data = await getCart();
-
-//                 console.log(
-//                     "Cart response:",
-//                     data
-//                 );
-
-//                 setCart(data.cart);
-
-//             } catch (error) {
-
-//                 console.error(
-//                     "Cart error:",
-//                     error
-//                 );
-
-//                 setError(
-//                     error.response?.data?.message ||
-//                     "Failed to load cart"
-//                 );
-
-//             } finally {
-
-//                 setLoading(false);
-
-//             }
-//         };
-
-//         fetchCart();
-
-//     }, []);
-
-//     if (loading) {
-//         return <h2>Loading cart...</h2>;
-//     }
-
-//     if (error) {
-//         return <h2>{error}</h2>;
-//     }
-
-//     if (!cart || cart.items.length === 0) {
-
-//         return (
-//             <div>
-//                 <h1>Your Cart 🛒</h1>
-
-//                 <p>
-//                     Your cart is empty.
-//                 </p>
-//             </div>
-//         );
-//     }
-
-//     return (
-//         <div className="cart-page">
-
-//             <h1>
-//                 Your Cart 🛒
-//             </h1>
-
-//             <div className="cart-items">
-
-//                 {cart.items.map((item) => (
-
-//                     <div
-//                         className="cart-item"
-//                         key={item.menuItem._id}
-//                     >
-
-//                         <h2>
-//                             {item.menuItem.name}
-//                         </h2>
-
-//                         <p>
-//                             ₹{item.menuItem.price}
-//                         </p>
-
-//                         <p>
-//                             Quantity:
-//                             {" "}
-//                             {item.quantity}
-//                         </p>
-
-//                         <p>
-//                             Item Total: ₹
-//                             {item.menuItem.price *
-//                                 item.quantity}
-//                         </p>
-
-//                     </div>
-
-//                 ))}
-
-//             </div>
-
-//             <div className="cart-summary">
-
-//                 <h2>
-//                     Bill Details
-//                 </h2>
-
-//                 <p>
-//                     Subtotal: ₹{cart.subtotal}
-//                 </p>
-
-//                 <p>
-//                     Delivery Fee: ₹
-//                     {cart.deliveryFee}
-//                 </p>
-
-//                 <h2>
-//                     Total: ₹{cart.totalAmount}
-//                 </h2>
-
-//                 <button>
-//                     Proceed to Checkout
-//                 </button>
-
-//             </div>
-
-//         </div>
-//     );
-// };
-
-// export default Cart;
-
-
-import { useEffect, useState } from "react";
+import {
+    Link,
+    useNavigate
+} from "react-router-dom";
 
 import {
     getCart,
@@ -153,39 +14,27 @@ import {
     removeCartItem
 } from "../api/cartApi.js";
 
-import {
-    useNavigate
-} from "react-router-dom";
-
 const Cart = () => {
 
     const navigate = useNavigate();
 
     const [cart, setCart] = useState(null);
-
     const [loading, setLoading] = useState(true);
-
     const [error, setError] = useState("");
 
-    const fetchCart = async () => {
 
+    const fetchCart = async () => {
         try {
 
             const data = await getCart();
 
-            console.log(
-                "Cart response:",
-                data
-            );
+            console.log("Cart response:", data);
 
             setCart(data.cart);
 
         } catch (error) {
 
-            console.error(
-                "Cart error:",
-                error
-            );
+            console.error("Cart error:", error);
 
             setError(
                 error.response?.data?.message ||
@@ -195,61 +44,80 @@ const Cart = () => {
         } finally {
 
             setLoading(false);
-
         }
     };
 
     useEffect(() => {
-
         fetchCart();
-
     }, []);
 
-    const handleIncrease = async (item) => {
 
-        try {
+    const calculateSubtotal = () => {
 
-            await updateCartItem(
-                item.menuItem._id,
-                item.quantity + 1
-            );
-
-            fetchCart();
-
-        } catch (error) {
-
-            console.error(
-                "Increase quantity error:",
-                error
-            );
+        if (
+            !cart ||
+            !cart.items
+        ) {
+            return 0;
         }
+
+        return cart.items.reduce(
+            (total, item) => {
+
+                return (
+                    total +
+                    item.menuItem.price *
+                    item.quantity
+                );
+
+            },
+            0
+        );
     };
 
-    const handleDecrease = async (item) => {
 
-        if (item.quantity <= 1) {
+    const subtotal = calculateSubtotal();
+
+    const deliveryFee =
+        cart?.restaurant?.deliveryFee || 0;
+
+    const total =
+        subtotal + deliveryFee;
+
+
+    const handleUpdateQuantity = async (
+        menuItemId,
+        newQuantity
+    ) => {
+
+        if (newQuantity < 1) {
             return;
         }
 
         try {
 
-            await updateCartItem(
-                item.menuItem._id,
-                item.quantity - 1
-            );
+            await updateCartItem(menuItemId, newQuantity);
 
-            fetchCart();
+            await fetchCart();
 
         } catch (error) {
 
             console.error(
-                "Decrease quantity error:",
+                "Update quantity error:",
                 error
+            );
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to update quantity"
             );
         }
     };
 
-    const handleRemove = async (menuItemId) => {
+
+    const handleRemoveItem = async (
+        menuItemId
+    ) => {
 
         try {
 
@@ -257,7 +125,7 @@ const Cart = () => {
                 menuItemId
             );
 
-            fetchCart();
+            await fetchCart();
 
         } catch (error) {
 
@@ -265,138 +133,217 @@ const Cart = () => {
                 "Remove item error:",
                 error
             );
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to remove item"
+            );
         }
     };
 
+
+
     if (loading) {
-        return <h2>Loading cart...</h2>;
-    }
-
-    if (error) {
-        return <h2>{error}</h2>;
-    }
-
-    if (!cart || cart.items.length === 0) {
-
         return (
-            <div>
-                <h1>Your Cart 🛒</h1>
+            <div className="page-container">
 
-                <p>
-                    Your cart is empty.
-                </p>
+                <h2>
+                    Loading cart...
+                </h2>
+
             </div>
         );
     }
 
-    const subtotal = cart.items.reduce(
-        (total, item) => {
+    if (error) {
 
-            return total +
-                item.menuItem.price *
-                item.quantity;
+        return (
+            <div className="page-container">
 
-        },
-        0
-    );
+                <h2>
+                    Cart
+                </h2>
 
-    const deliveryFee =
-        cart.restaurant?.deliveryFee || 0;
+                <p className="error-message">
+                    {error}
+                </p>
 
-    const totalAmount =
-        subtotal + deliveryFee;
+            </div>
+        );
+    }
+
+    if (
+        !cart ||
+        !cart.items ||
+        cart.items.length === 0
+    ) {
+
+        return (
+            <div className="page-container">
+
+                <div className="page-header">
+
+                    <h1>
+                        Your Cart 🛒
+                    </h1>
+
+                    <p>
+                        Your cart is empty.
+                    </p>
+
+                </div>
+
+                <Link
+                    to="/restaurants"
+                    className="cart-button"
+                >
+                    Browse Restaurants
+                </Link>
+
+            </div>
+        );
+    }
 
     return (
-        <div className="cart-page">
+        <div className="page-container">
 
-            <h1>
-                Your Cart 🛒
-            </h1>
+            <div className="page-header">
 
-            <div className="cart-items">
+                <h1>
+                    Your Cart 🛒
+                </h1>
 
-                {cart.items.map((item) => (
+                <p>
+                    Review your selected items
+                </p>
 
-                    <div
-                        className="cart-item"
-                        key={item.menuItem._id}
-                    >
+            </div>
 
-                        <h2>
-                            {item.menuItem.name}
-                        </h2>
+            <div className="cart-container">
 
-                        <p>
-                            ₹{item.menuItem.price}
-                        </p>
+                {cart.items.map(
+                    (item) => (
 
-                        <div>
+                        <div
+                            className="cart-item"
+                        >
 
-                            <button
-                                onClick={() =>
-                                    handleDecrease(item)
-                                }
-                            >
-                                −
-                            </button>
+                            <div>
 
-                            <span>
-                                {" "}
-                                {item.quantity}
-                                {" "}
-                            </span>
+                                <h2>
+                                    {item.menuItem.name}
+                                </h2>
 
-                            <button
-                                onClick={() =>
-                                    handleIncrease(item)
-                                }
-                            >
-                                +
-                            </button>
+                                <p>
+                                    ₹
+                                    {item.menuItem.price}
+                                </p>
+
+                                <div className="quantity-controls">
+
+                                    <button
+                                        onClick={() =>
+                                            handleUpdateQuantity(
+                                                item.menuItem._id,
+                                                item.quantity - 1
+                                            )
+                                        }
+                                    >
+                                        −
+                                    </button>
+
+                                    <span>
+                                        {item.quantity}
+                                    </span>
+
+                                    <button
+                                        onClick={() =>
+                                            handleUpdateQuantity(
+                                                item.menuItem._id,
+                                                item.quantity + 1
+                                            )
+                                        }
+                                    >
+                                        +
+                                    </button>
+
+                                </div>
+
+                                <button
+                                    className="remove-button"
+                                    onClick={() =>
+                                        handleRemoveItem(
+                                            item.menuItem._id
+                                        )
+                                    }
+                                >
+                                    Remove
+                                </button>
+
+                            </div>
+
+                            <div>
+
+                                <strong>
+                                    ₹
+                                    {item.menuItem.price *
+                                        item.quantity}
+                                </strong>
+
+                            </div>
 
                         </div>
-
-                        <p>
-                            Item Total: ₹
-                            {item.menuItem.price *
-                                item.quantity}
-                        </p>
-
-                        <button
-                            onClick={() =>
-                                handleRemove(
-                                    item.menuItem._id
-                                )
-                            }
-                        >
-                            🗑️ Remove
-                        </button>
-
-                    </div>
-
-                ))}
+                    )
+                )}
 
             </div>
 
             <div className="cart-summary">
 
                 <h2>
-                    Bill Details
+                    Order Summary
                 </h2>
 
-                <p>
-                    Subtotal: ₹{subtotal}
-                </p>
+                <div className="summary-row">
 
-                <p>
-                    Delivery Fee: ₹{deliveryFee}
-                </p>
+                    <span>
+                        Subtotal
+                    </span>
 
-                <h2>
-                    Total: ₹{totalAmount}
-                </h2>
+                    <span>
+                        ₹{subtotal}
+                    </span>
+
+                </div>
+
+                <div className="summary-row">
+
+                    <span>
+                        Delivery Fee
+                    </span>
+
+                    <span>
+                        ₹{deliveryFee}
+                    </span>
+
+                </div>
+
+                <hr />
+
+                <div className="summary-row total-row">
+
+                    <strong>
+                        Total
+                    </strong>
+
+                    <strong>
+                        ₹{total}
+                    </strong>
+
+                </div>
 
                 <button
+                    className="checkout-button"
                     onClick={() =>
                         navigate("/checkout")
                     }
