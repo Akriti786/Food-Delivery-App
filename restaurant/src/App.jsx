@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Menu from "./pages/Menu.jsx";
+import Orders from "./pages/Orders.jsx";
 
 const router = createBrowserRouter([
   {
@@ -28,6 +29,11 @@ const router = createBrowserRouter([
       {
         path: "menu",
         element: <Menu />
+      },
+
+      {
+        path: "orders",
+        element: <Orders />
       }
 
     ]

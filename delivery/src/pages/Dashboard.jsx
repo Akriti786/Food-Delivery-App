@@ -1,4 +1,7 @@
-import { useEffect, useState } from "react";
+import {
+    useEffect,
+    useState
+} from "react";
 
 import {
     getReadyOrders,
@@ -7,11 +10,8 @@ import {
     updateDeliveryOrderStatus
 } from "../api/deliveryApi.js";
 
-const Dashboard = () => {
 
-    const user = JSON.parse(
-        localStorage.getItem("user")
-    );
+const Dashboard = () => {
 
     const [readyOrders, setReadyOrders] =
         useState([]);
@@ -25,68 +25,61 @@ const Dashboard = () => {
     const [error, setError] =
         useState("");
 
-    const fetchReadyOrders = async () => {
-
-        try {
-
-            const data =
-                await getReadyOrders();
-
-            setReadyOrders(
-                data.orders || []
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Available orders error:",
-                error
-            );
-
-            setError(
-                error.response?.data?.message ||
-                "Failed to load available orders"
-            );
-        }
-    };
-
-    const fetchMyOrders = async () => {
-
-        try {
-
-            const data =
-                await getMyOrders();
-
-            setMyOrders(
-                data.orders || []
-            );
-
-        } catch (error) {
-
-            console.error(
-                "My orders error:",
-                error
-            );
-
-            setError(
-                error.response?.data?.message ||
-                "Failed to load my orders"
-            );
-        }
-    };
 
     const fetchOrders = async () => {
 
-        setLoading(true);
-        setError("");
+        try {
 
-        await Promise.all([
-            fetchReadyOrders(),
-            fetchMyOrders()
-        ]);
+            const [
+                readyData,
+                myData
+            ] = await Promise.all([
 
-        setLoading(false);
+                getReadyOrders(),
+
+                getMyOrders()
+
+            ]);
+
+
+            console.log(
+                "Ready orders:",
+                readyData
+            );
+
+            console.log(
+                "My orders:",
+                myData
+            );
+
+
+            setReadyOrders(
+                readyData.orders || []
+            );
+
+            setMyOrders(
+                myData.orders || []
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Get delivery orders error:",
+                error
+            );
+
+            setError(
+                error.response?.data?.message ||
+                "Failed to load orders"
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
     };
+
 
     useEffect(() => {
 
@@ -94,19 +87,28 @@ const Dashboard = () => {
 
     }, []);
 
-    const handleAssign = async (
+
+    const handleAssignOrder = async (
         orderId
     ) => {
 
         try {
 
-            await assignOrder(orderId);
+            const data =
+                await assignOrder(
+                    orderId
+                );
 
-            alert(
-                "Order assigned successfully 🚴"
+            console.log(
+                "Order assigned:",
+                data
             );
 
-            fetchOrders();
+            alert(
+                "Order assigned successfully"
+            );
+
+            await fetchOrders();
 
         } catch (error) {
 
@@ -122,28 +124,62 @@ const Dashboard = () => {
         }
     };
 
+
+    const getNextStatus = (
+        currentStatus
+    ) => {
+
+        if (
+            currentStatus === "ASSIGNED"
+        ) {
+            return "PICKED_UP";
+        }
+
+        if (
+            currentStatus === "PICKED_UP"
+        ) {
+            return "OUT_FOR_DELIVERY";
+        }
+
+        if (
+            currentStatus ===
+            "OUT_FOR_DELIVERY"
+        ) {
+            return "DELIVERED";
+        }
+
+        return null;
+    };
+
+
     const handleStatusChange = async (
         orderId,
-        status
+        newStatus
     ) => {
 
         try {
 
-            await updateDeliveryOrderStatus(
-                orderId,
-                status
+            const data =
+                await updateDeliveryOrderStatus(
+                    orderId,
+                    newStatus
+                );
+
+            console.log(
+                "Delivery status updated:",
+                data
             );
 
             alert(
-                `Order ${status}`
+                `Order marked as ${newStatus}`
             );
 
-            fetchOrders();
+            await fetchOrders();
 
         } catch (error) {
 
             console.error(
-                "Status update error:",
+                "Update delivery status error:",
                 error
             );
 
@@ -154,18 +190,6 @@ const Dashboard = () => {
         }
     };
 
-    if (loading) {
-
-        return (
-            <h2>
-                Loading delivery dashboard...
-            </h2>
-        );
-    }
-
-    /*
-        Separate active and completed orders
-    */
 
     const activeOrders =
         myOrders.filter(
@@ -174,426 +198,460 @@ const Dashboard = () => {
                     "ASSIGNED",
                     "PICKED_UP",
                     "OUT_FOR_DELIVERY"
-                ].includes(order.orderStatus)
+                ].includes(
+                    order.orderStatus
+                )
         );
+
 
     const completedOrders =
         myOrders.filter(
             (order) =>
-                order.orderStatus === "DELIVERED"
+                order.orderStatus ===
+                "DELIVERED"
         );
 
+
+    if (loading) {
+
+        return (
+            <div className="page-container">
+
+                <h2>
+                    Loading orders...
+                </h2>
+
+            </div>
+        );
+    }
+
+
+    if (error) {
+
+        return (
+            <div className="page-container">
+
+                <p className="error-message">
+                    {error}
+                </p>
+
+            </div>
+        );
+    }
+
+
     return (
-        <div className="delivery-dashboard">
 
-            {/* ========================= */}
-            {/* HEADER */}
-            {/* ========================= */}
+        <div className="page-container">
 
-            <div className="dashboard-header">
+            <div className="page-header">
 
                 <h1>
-                    Delivery Dashboard 🚴
+                    Delivery Dashboard 🚚
                 </h1>
 
                 <p>
-                    Welcome, {user?.name}
+                    Manage your delivery orders
                 </p>
 
             </div>
 
 
-            {/* ========================= */}
-            {/* ERROR */}
-            {/* ========================= */}
-
-            {error && (
-                <p>
-                    {error}
-                </p>
-            )}
-
-
-            {/* ========================= */}
             {/* AVAILABLE ORDERS */}
-            {/* ========================= */}
 
-            <h2>
-                📦 Available Orders
-            </h2>
+            <section className="delivery-section">
 
-            {readyOrders.length === 0 ? (
+                <h2>
+                    Available Orders
+                </h2>
 
-                <p>
-                    No available orders.
+                <p className="section-description">
+                    Orders ready for pickup
                 </p>
 
-            ) : (
 
-                readyOrders.map(
-                    (order) => (
+                {readyOrders.length === 0 ? (
 
-                        <div
-                            className="order-card"
-                            key={order._id}
-                        >
+                    <div className="empty-state">
 
-                            <h3>
-                                Order #
-                                {order._id.slice(-6)}
-                            </h3>
+                        <p>
+                            No orders are currently
+                            ready for pickup.
+                        </p>
 
-                            <h4>
-                                Restaurant
-                            </h4>
+                    </div>
 
-                            <p>
-                                {
-                                    order.restaurant?.name
-                                }
-                            </p>
+                ) : (
 
-                            <p>
-                                Restaurant Address:{" "}
-                                {
-                                    order.restaurant?.address
-                                }
-                            </p>
+                    <div className="orders-list">
 
-                            <h4>
-                                Customer
-                            </h4>
+                        {readyOrders.map(
+                            (order) => (
 
-                            <p>
-                                Name:{" "}
-                                {
-                                    order.customer?.name
-                                }
-                            </p>
+                                <div
+                                    className="order-card"
+                                    key={order._id}
+                                >
 
-                            <p>
-                                Phone:{" "}
-                                {
-                                    order.customer?.phone
-                                }
-                            </p>
+                                    <div className="order-header">
 
-                            <p>
-                                Delivery Address:{" "}
-                                {
-                                    order.deliveryAddress
-                                }
-                            </p>
+                                        <div>
 
-                            <h4>
-                                Items
-                            </h4>
+                                            <h2>
+                                                Order #
+                                                {order._id.slice(-6)}
+                                            </h2>
 
-                            {order.items.map(
-                                (item, index) => (
+                                            <p>
+                                                {order.restaurant?.name}
+                                            </p>
 
-                                    <p key={index}>
-                                        {item.name}
-                                        {" × "}
-                                        {item.quantity}
-                                    </p>
-
-                                )
-                            )}
-
-                            <h3>
-                                Total: ₹
-                                {
-                                    order.totalAmount
-                                }
-                            </h3>
-
-                            <p>
-                                Payment:{" "}
-                                {
-                                    order.paymentMethod
-                                }
-                            </p>
-
-                            <p>
-                                Status:{" "}
-                                <strong>
-                                    {
-                                        order.orderStatus
-                                    }
-                                </strong>
-                            </p>
-
-                            <button
-                                onClick={() =>
-                                    handleAssign(
-                                        order._id
-                                    )
-                                }
-                            >
-                                🚴 Assign Order
-                            </button>
-
-                        </div>
-
-                    )
-                )
-            )}
+                                        </div>
 
 
-            {/* ========================= */}
+                                        <span className="order-status">
+                                            {order.orderStatus}
+                                        </span>
+
+                                    </div>
+
+
+                                    <div className="order-items">
+
+                                        {order.items.map(
+                                            (item) => (
+
+                                                <div
+                                                    className="order-item"
+                                                    key={
+                                                        item._id ||
+                                                        item.menuItem
+                                                    }
+                                                >
+
+                                                    <span>
+                                                        {item.name}
+                                                        {" "}×{" "}
+                                                        {item.quantity}
+                                                    </span>
+
+                                                    <span>
+                                                        ₹
+                                                        {
+                                                            item.price *
+                                                            item.quantity
+                                                        }
+                                                    </span>
+
+                                                </div>
+
+                                            )
+                                        )}
+
+                                    </div>
+
+
+                                    <div className="order-summary">
+
+                                        <div className="order-total">
+
+                                            <strong>
+                                                Total
+                                            </strong>
+
+                                            <strong>
+                                                ₹
+                                                {order.totalAmount}
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <button
+                                        className="status-button"
+                                        onClick={() =>
+                                            handleAssignOrder(
+                                                order._id
+                                            )
+                                        }
+                                    >
+                                        Assign Order
+                                    </button>
+
+                                </div>
+
+                            )
+                        )}
+
+                    </div>
+
+                )}
+
+            </section>
+
+
             {/* ACTIVE ORDERS */}
-            {/* ========================= */}
 
-            <h2>
-                🚴 Active Orders
-            </h2>
+            <section className="delivery-section">
 
-            {activeOrders.length === 0 ? (
+                <h2>
+                    Active Orders
+                </h2>
 
-                <p>
-                    No active orders.
+                <p className="section-description">
+                    Orders currently being delivered
                 </p>
 
-            ) : (
 
-                activeOrders.map(
-                    (order) => (
+                {activeOrders.length === 0 ? (
 
-                        <div
-                            className="order-card"
-                            key={order._id}
-                        >
+                    <div className="empty-state">
 
-                            <h3>
-                                Order #
-                                {order._id.slice(-6)}
-                            </h3>
+                        <p>
+                            No active deliveries.
+                        </p>
 
-                            <h4>
-                                Restaurant
-                            </h4>
+                    </div>
 
-                            <p>
-                                {
-                                    order.restaurant?.name
-                                }
-                            </p>
+                ) : (
 
-                            <p>
-                                Restaurant Address:{" "}
-                                {
-                                    order.restaurant?.address
-                                }
-                            </p>
+                    <div className="orders-list">
 
-                            <h4>
-                                Customer
-                            </h4>
+                        {activeOrders.map(
+                            (order) => {
 
-                            <p>
-                                Name:{" "}
-                                {
-                                    order.customer?.name
-                                }
-                            </p>
+                                const nextStatus =
+                                    getNextStatus(
+                                        order.orderStatus
+                                    );
 
-                            <p>
-                                Phone:{" "}
-                                {
-                                    order.customer?.phone
-                                }
-                            </p>
 
-                            <p>
-                                Delivery Address:{" "}
-                                {
-                                    order.deliveryAddress
-                                }
-                            </p>
+                                return (
 
-                            <h4>
-                                Items
-                            </h4>
+                                    <div
+                                        className="order-card"
+                                        key={order._id}
+                                    >
 
-                            {order.items.map(
-                                (item, index) => (
+                                        <div className="order-header">
 
-                                    <p key={index}>
-                                        {item.name}
-                                        {" × "}
-                                        {item.quantity}
+                                            <div>
+
+                                                <h2>
+                                                    Order #
+                                                    {order._id.slice(-6)}
+                                                </h2>
+
+                                                <p>
+                                                    {
+                                                        order.restaurant?.name
+                                                    }
+                                                </p>
+
+                                            </div>
+
+
+                                            <span className="order-status">
+                                                {
+                                                    order.orderStatus
+                                                }
+                                            </span>
+
+                                        </div>
+
+
+                                        <div className="customer-info">
+
+                                            <p>
+                                                Customer:
+                                                {" "}
+                                                {
+                                                    order.customer?.name
+                                                }
+                                            </p>
+
+                                            <p>
+                                                Phone:
+                                                {" "}
+                                                {
+                                                    order.customer?.phone
+                                                }
+                                            </p>
+
+                                            <p>
+                                                Address:
+                                                {" "}
+                                                {
+                                                    order.deliveryAddress
+                                                }
+                                            </p>
+
+                                        </div>
+
+
+                                        <div className="order-items">
+
+                                            {order.items.map(
+                                                (item) => (
+
+                                                    <div
+                                                        className="order-item"
+                                                        key={
+                                                            item._id ||
+                                                            item.menuItem
+                                                        }
+                                                    >
+
+                                                        <span>
+                                                            {item.name}
+                                                            {" "}×{" "}
+                                                            {
+                                                                item.quantity
+                                                            }
+                                                        </span>
+
+                                                        <span>
+                                                            ₹
+                                                            {
+                                                                item.price *
+                                                                item.quantity
+                                                            }
+                                                        </span>
+
+                                                    </div>
+
+                                                )
+                                            )}
+
+                                        </div>
+
+
+                                        {nextStatus && (
+
+                                            <button
+                                                className="status-button"
+                                                onClick={() =>
+                                                    handleStatusChange(
+                                                        order._id,
+                                                        nextStatus
+                                                    )
+                                                }
+                                            >
+                                                Mark as{" "}
+                                                {nextStatus}
+                                            </button>
+
+                                        )}
+
+                                    </div>
+
+                                );
+
+                            }
+                        )}
+
+                    </div>
+
+                )}
+
+            </section>
+
+
+            {/* COMPLETED ORDERS */}
+
+            <section className="delivery-section">
+
+                <h2>
+                    Order History
+                </h2>
+
+                <p className="section-description">
+                    Completed deliveries
+                </p>
+
+
+                {completedOrders.length === 0 ? (
+
+                    <div className="empty-state">
+
+                        <p>
+                            No completed deliveries yet.
+                        </p>
+
+                    </div>
+
+                ) : (
+
+                    <div className="orders-list">
+
+                        {completedOrders.map(
+                            (order) => (
+
+                                <div
+                                    className="order-card"
+                                    key={order._id}
+                                >
+
+                                    <div className="order-header">
+
+                                        <div>
+
+                                            <h2>
+                                                Order #
+                                                {order._id.slice(-6)}
+                                            </h2>
+
+                                            <p>
+                                                {
+                                                    order.restaurant?.name
+                                                }
+                                            </p>
+
+                                        </div>
+
+
+                                        <span className="order-status">
+                                            DELIVERED
+                                        </span>
+
+                                    </div>
+
+
+                                    <p>
+                                        Customer:
+                                        {" "}
+                                        {
+                                            order.customer?.name
+                                        }
                                     </p>
 
-                                )
-                            )}
 
-                            <h3>
-                                Total: ₹
-                                {
-                                    order.totalAmount
-                                }
-                            </h3>
+                                    <p>
+                                        Total:
+                                        {" "}
+                                        ₹
+                                        {
+                                            order.totalAmount
+                                        }
+                                    </p>
 
-                            <p>
-                                Payment:{" "}
-                                {
-                                    order.paymentMethod
-                                }
-                            </p>
+                                </div>
 
-                            <p>
-                                Status:{" "}
-                                <strong>
-                                    {
-                                        order.orderStatus
-                                    }
-                                </strong>
-                            </p>
+                            )
+                        )}
 
+                    </div>
 
-                            {/* ASSIGNED */}
+                )}
 
-                            {order.orderStatus ===
-                                "ASSIGNED" && (
-
-                                <button
-                                    onClick={() =>
-                                        handleStatusChange(
-                                            order._id,
-                                            "PICKED_UP"
-                                        )
-                                    }
-                                >
-                                    📦 Picked Up
-                                </button>
-
-                            )}
-
-
-                            {/* PICKED UP */}
-
-                            {order.orderStatus ===
-                                "PICKED_UP" && (
-
-                                <button
-                                    onClick={() =>
-                                        handleStatusChange(
-                                            order._id,
-                                            "OUT_FOR_DELIVERY"
-                                        )
-                                    }
-                                >
-                                    🚴 Out for Delivery
-                                </button>
-
-                            )}
-
-
-                            {/* OUT FOR DELIVERY */}
-
-                            {order.orderStatus ===
-                                "OUT_FOR_DELIVERY" && (
-
-                                <button
-                                    onClick={() =>
-                                        handleStatusChange(
-                                            order._id,
-                                            "DELIVERED"
-                                        )
-                                    }
-                                >
-                                    ✅ Mark Delivered
-                                </button>
-
-                            )}
-
-                        </div>
-
-                    )
-                )
-            )}
-
-
-            {/* ========================= */}
-            {/* ORDER HISTORY */}
-            {/* ========================= */}
-
-            <h2>
-                📜 Order History
-            </h2>
-
-            {completedOrders.length === 0 ? (
-
-                <p>
-                    No completed orders yet.
-                </p>
-
-            ) : (
-
-                completedOrders.map(
-                    (order) => (
-
-                        <div
-                            className="order-card"
-                            key={order._id}
-                        >
-
-                            <h3>
-                                Order #
-                                {order._id.slice(-6)}
-                            </h3>
-
-                            <p>
-                                Restaurant:{" "}
-                                {
-                                    order.restaurant?.name
-                                }
-                            </p>
-
-                            <p>
-                                Customer:{" "}
-                                {
-                                    order.customer?.name
-                                }
-                            </p>
-
-                            <p>
-                                Delivery Address:{" "}
-                                {
-                                    order.deliveryAddress
-                                }
-                            </p>
-
-                            <p>
-                                Total: ₹
-                                {
-                                    order.totalAmount
-                                }
-                            </p>
-
-                            <p>
-                                Payment:{" "}
-                                {
-                                    order.paymentMethod
-                                }
-                            </p>
-
-                            <p>
-                                Status:{" "}
-                                <strong>
-                                    DELIVERED
-                                </strong>
-                            </p>
-
-                        </div>
-
-                    )
-                )
-            )}
+            </section>
 
         </div>
+
     );
 };
+
 
 export default Dashboard;

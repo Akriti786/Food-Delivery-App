@@ -472,3 +472,284 @@ button {
 
     font-weight: bold;
 }
+
+.orders-list {
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+.order-card {
+    background: white;
+
+    padding: 25px;
+
+    margin-bottom: 20px;
+
+    border-radius: 10px;
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.order-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    margin-bottom: 20px;
+}
+
+.order-header h2 {
+    margin-bottom: 6px;
+}
+
+.order-header p {
+    color: #777;
+
+    font-size: 14px;
+}
+
+.order-status {
+    padding: 7px 12px;
+
+    border-radius: 20px;
+
+    background: #fff0e8;
+
+    color: #ff6b35;
+
+    font-size: 13px;
+
+    font-weight: bold;
+}
+
+.order-restaurant {
+    margin-bottom: 20px;
+}
+
+.order-restaurant p {
+    margin-top: 6px;
+
+    color: #555;
+}
+
+.order-items {
+    margin-top: 20px;
+}
+
+.order-items h3 {
+    margin-bottom: 12px;
+}
+
+.order-item {
+    display: flex;
+
+    justify-content: space-between;
+
+    padding: 10px 0;
+
+    border-bottom: 1px solid #eee;
+}
+
+.order-summary {
+    margin-top: 20px;
+}
+
+.order-summary > div {
+    display: flex;
+
+    justify-content: space-between;
+
+    margin: 10px 0;
+}
+
+.order-summary hr {
+    border: none;
+
+    border-top: 1px solid #ddd;
+
+    margin: 15px 0;
+}
+
+.order-total {
+    font-size: 19px;
+}
+
+.payment-info {
+    margin-top: 20px;
+
+    padding-top: 15px;
+
+    border-top: 1px solid #eee;
+}
+
+.payment-info p {
+    margin: 7px 0;
+
+    color: #555;
+}
+
+.empty-state {
+    max-width: 600px;
+
+    margin: 40px auto;
+
+    padding: 40px;
+
+    background: white;
+
+    border-radius: 10px;
+
+    text-align: center;
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.empty-state h2 {
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: #666;
+}
+
+
+
+.refresh-orders-button {
+    margin-top: 15px;
+
+    padding: 10px 16px;
+
+    border: none;
+
+    border-radius: 6px;
+
+    background: #ff6b35;
+
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.refresh-orders-button:hover {
+    opacity: 0.9;
+}
+
+.order-timeline {
+    display: flex;
+
+    align-items: flex-start;
+
+    gap: 0;
+
+    margin: 25px 0;
+
+    padding: 20px 0;
+
+    overflow-x: auto;
+}
+
+.timeline-step {
+    position: relative;
+
+    min-width: 105px;
+
+    text-align: center;
+
+    color: #999;
+
+    font-size: 12px;
+}
+
+.timeline-step:not(:last-child)::after {
+    content: "";
+
+    position: absolute;
+
+    top: 14px;
+
+    left: 50%;
+
+    width: 100%;
+
+    height: 2px;
+
+    background: #ddd;
+
+    z-index: 0;
+}
+
+.timeline-dot {
+    position: relative;
+
+    z-index: 1;
+
+    width: 30px;
+
+    height: 30px;
+
+    margin: 0 auto 8px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #ddd;
+
+    color: white;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+.timeline-step.completed {
+    color: #ff6b35;
+
+    font-weight: bold;
+}
+
+.timeline-step.completed .timeline-dot {
+    background: #ff6b35;
+}
+
+.timeline-step.current {
+    color: #222;
+}
+
+.timeline-step.current .timeline-dot {
+    transform: scale(1.15);
+}
+
+
+
+.special-order-status {
+    padding: 12px;
+
+    margin: 15px 0;
+
+    border-radius: 6px;
+
+    font-weight: bold;
+}
+
+.rejected {
+    background: #ffe5e5;
+
+    color: #c62828;
+}
+
+.cancelled {
+    background: #fff3cd;
+
+    color: #856404;
+}

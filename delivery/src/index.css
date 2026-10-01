@@ -169,7 +169,7 @@ button {
 
 /* Section headings */
 
-.delivery-dashboard > h2 {
+.delivery-dashboard>h2 {
     margin-top: 30px;
 
     margin-bottom: 20px;
@@ -232,4 +232,123 @@ button {
 
 .order-card button:hover {
     opacity: 0.9;
+}
+
+
+.delivery-section {
+    max-width: 900px;
+    margin: 0 auto 40px;
+}
+
+.delivery-section h2 {
+    margin-bottom: 8px;
+}
+
+.section-description {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.orders-list {
+    width: 100%;
+}
+
+.order-card {
+    background: white;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    margin-bottom: 20px;
+}
+
+.order-header h2 {
+    margin-bottom: 6px;
+}
+
+.order-header p {
+    color: #666;
+}
+
+.order-status {
+    padding: 7px 12px;
+    border-radius: 20px;
+
+    background: #fff0e8;
+    color: #ff6b35;
+
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+
+    padding: 10px 0;
+
+    border-bottom: 1px solid #eee;
+}
+
+.order-summary {
+    margin-top: 20px;
+}
+
+.order-total {
+    display: flex;
+    justify-content: space-between;
+
+    font-size: 19px;
+}
+
+.customer-info {
+    margin: 15px 0;
+}
+
+.customer-info p {
+    margin: 7px 0;
+    color: #555;
+}
+
+.status-button {
+    margin-top: 20px;
+
+    padding: 12px 18px;
+
+    border: none;
+    border-radius: 6px;
+
+    background: #ff6b35;
+    color: white;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.empty-state {
+    background: white;
+
+    padding: 30px;
+
+    border-radius: 10px;
+
+    text-align: center;
+
+    box-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.error-message {
+    color: #d32f2f;
+    font-weight: bold;
 }

@@ -53,6 +53,10 @@ const Navbar = () => {
                                 Restaurant
                             </span>
 
+                            <Link to="/orders">
+                                Orders
+                            </Link>
+
                             <span>
                                 Hi, {user?.name}
                             </span>
